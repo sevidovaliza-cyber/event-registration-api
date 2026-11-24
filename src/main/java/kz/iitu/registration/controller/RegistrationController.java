@@ -5,6 +5,7 @@ import kz.iitu.registration.model.EventInfo;
 import kz.iitu.registration.service.EventService;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,10 +26,12 @@ public class RegistrationController {
     @Value("${app.semester}")
     private String semester;
 
+    // Подключаем сервис через конструктор
     public RegistrationController(EventService eventService) {
         this.eventService = eventService;
     }
 
+    // Приветствие из Lab 6
     @GetMapping("/hello")
     public Map<String, String> hello() {
         return Map.of(
@@ -36,11 +39,7 @@ public class RegistrationController {
         );
     }
 
-    @GetMapping("/events")
-    public List<EventInfo> getEvents() {
-        return eventService.getEvents();
-    }
-
+    // Информация о приложении из Lab 6
     @GetMapping("/info")
     public Map<String, String> getInfo() {
         return Map.of(
@@ -50,17 +49,94 @@ public class RegistrationController {
         );
     }
 
-    @GetMapping("/events/{id}")
-    public Object getEventById(@PathVariable int id) {
+    // GET: все мероприятия или поиск по названию
+    @GetMapping("/events")
+    public List<EventInfo> getEvents(
+            @RequestParam(required = false) String title) {
 
-        for (EventInfo event : eventService.getEvents()) {
-            if (event.getId() == id) {
-                return event;
-            }
+        if (title != null) {
+            return eventService.searchByTitle(title);
         }
 
-        return org.springframework.http.ResponseEntity
-                .status(404)
-                .body(Map.of("error", "Event not found"));
+        return eventService.getEvents();
+    }
+
+    // GET: поиск мероприятия по ID
+    @GetMapping("/events/{id}")
+    public ResponseEntity<EventInfo> getEventById(
+            @PathVariable int id) {
+
+        EventInfo event = eventService.getEventById(id);
+
+        if (event == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(event);
+    }
+
+    // POST: создание нового мероприятия
+    @PostMapping("/events")
+    public ResponseEntity<EventInfo> addEvent(
+            @RequestBody EventInfo request) {
+
+        if (!isValid(request)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        EventInfo event = eventService.addEvent(
+                request.getTitle(),
+                request.getLocation()
+        );
+
+        return ResponseEntity.status(201).body(event);
+    }
+
+    // PUT: изменение мероприятия
+    @PutMapping("/events/{id}")
+    public ResponseEntity<EventInfo> updateEvent(
+            @PathVariable int id,
+            @RequestBody EventInfo request) {
+
+        EventInfo existing = eventService.getEventById(id);
+
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (!isValid(request)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        EventInfo updated = eventService.updateEvent(
+                id,
+                request.getTitle(),
+                request.getLocation()
+        );
+
+        return ResponseEntity.ok(updated);
+    }
+
+    // DELETE: удаление мероприятия
+    @DeleteMapping("/events/{id}")
+    public ResponseEntity<Void> deleteEvent(
+            @PathVariable int id) {
+
+        boolean deleted = eventService.deleteEvent(id);
+
+        if (!deleted) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.noContent().build();
+    }
+
+    // Проверка названия и места проведения
+    private boolean isValid(EventInfo event) {
+        return event != null
+                && event.getTitle() != null
+                && !event.getTitle().isBlank()
+                && event.getLocation() != null
+                && !event.getLocation().isBlank();
     }
 }

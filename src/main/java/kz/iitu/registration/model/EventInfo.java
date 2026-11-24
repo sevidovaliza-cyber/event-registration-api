@@ -1,19 +1,28 @@
 
 package kz.iitu.registration.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class EventInfo {
 
-    private int id;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Integer id;
+
     private String title;
     private String location;
 
-    public EventInfo(int id, String title, String location) {
+    // Пустой конструктор для JSON
+    public EventInfo() {
+    }
+
+    // Конструктор для создания мероприятия
+    public EventInfo(Integer id, String title, String location) {
         this.id = id;
         this.title = title;
         this.location = location;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -23,5 +32,13 @@ public class EventInfo {
 
     public String getLocation() {
         return location;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 }

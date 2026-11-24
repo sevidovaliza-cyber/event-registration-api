@@ -1,64 +1,68 @@
 
 # Event Registration API
 
-## Laboratory Work 6
-Introduction to Spring Boot and Dependency Injection
+## Laboratory Work 7
+Spring Boot REST Controller — CRUD Operations
 
-## Project Description
-This project is a simple Spring Boot backend application
-for an Event Registration system.
-
-The application provides REST API endpoints that return
-JSON responses. Event information is stored in memory.
+## Description
+A REST API for managing university events.
+The application supports creating, reading, updating,
+deleting and searching events.
 
 ## Technologies
 - Java 21
-- Spring Boot 4.1.2
+- Spring Boot
 - Gradle
-- Spring Web MVC
-
-## Project Structure
-- controller - handles HTTP requests
-- service - contains application logic and event data
-- model - represents event information
-- application.properties - stores application settings
-
-## API Endpoints
-
-GET /api/hello
-Returns a welcome message.
-
-GET /api/events
-Returns a list of three events.
-
-GET /api/info
-Returns application configuration.
-
-GET /api/events/{id}
-Returns an event by ID or a 404 error if not found.
+- Postman
 
 ## How to Run
 
-1. Open the project in IntelliJ IDEA.
-2. Make sure JDK 21 is installed.
-3. Open the terminal in the project directory.
-4. Run the command:
+Run the following command:
 
-   ./gradlew bootRun
+    ./gradlew bootRun
 
-   On Windows:
+For Windows:
 
-   .\gradlew.bat bootRun
+    .\gradlew.bat bootRun
 
-5. Open http://localhost:8080/api/events
+Base URL: http://localhost:9090
 
-## Dependency Injection
+## API Endpoints
 
-RegistrationController receives EventService through
-its constructor. Spring Boot automatically creates and
-injects the service object using the @Service annotation.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/hello | Welcome message |
+| GET | /api/info | Application information |
+| GET | /api/events | Get all events |
+| GET | /api/events/1 | Get event by ID |
+| GET | /api/events?title=quiz | Search by title |
+| POST | /api/events | Create an event |
+| PUT | /api/events/4 | Update an event |
+| DELETE | /api/events/4 | Delete an event |
 
-## Database
+## JSON Request Example
 
-This application does not use a database.
-All events are stored in an in-memory list.
+    {
+      "title": "Python Workshop",
+      "location": "Room 305"
+    }
+
+## HTTP Status Codes
+
+- 200 OK
+- 201 Created
+- 204 No Content
+- 400 Bad Request
+- 404 Not Found
+
+## Data Storage
+
+Events are stored in memory using ArrayList.
+IDs are assigned automatically by the server.
+All changes are reset after restarting the application.
+
+## Conclusion
+
+The application implements REST CRUD operations
+using Spring Boot, constructor dependency injection,
+request parameters, path variables and JSON request bodies.
