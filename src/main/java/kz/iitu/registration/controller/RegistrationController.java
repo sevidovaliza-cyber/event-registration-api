@@ -1,7 +1,6 @@
-
 package kz.iitu.registration.controller;
 
-import kz.iitu.registration.model.EventInfo;
+import kz.iitu.registration.model.Event;
 import kz.iitu.registration.service.EventService;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -26,12 +25,12 @@ public class RegistrationController {
     @Value("${app.semester}")
     private String semester;
 
-    // Подключаем сервис через конструктор
+    // Подключение сервиса через конструктор
     public RegistrationController(EventService eventService) {
         this.eventService = eventService;
     }
 
-    // Приветствие из Lab 6
+    // Приветственное сообщение
     @GetMapping("/hello")
     public Map<String, String> hello() {
         return Map.of(
@@ -39,7 +38,7 @@ public class RegistrationController {
         );
     }
 
-    // Информация о приложении из Lab 6
+    // Информация о приложении
     @GetMapping("/info")
     public Map<String, String> getInfo() {
         return Map.of(
@@ -49,9 +48,9 @@ public class RegistrationController {
         );
     }
 
-    // GET: все мероприятия или поиск по названию
+    // Получение всех мероприятий или поиск по названию
     @GetMapping("/events")
-    public List<EventInfo> getEvents(
+    public List<Event> getEvents(
             @RequestParam(required = false) String title) {
 
         if (title != null) {
@@ -61,12 +60,12 @@ public class RegistrationController {
         return eventService.getEvents();
     }
 
-    // GET: поиск мероприятия по ID
+    // Получение мероприятия по ID
     @GetMapping("/events/{id}")
-    public ResponseEntity<EventInfo> getEventById(
-            @PathVariable int id) {
+    public ResponseEntity<Event> getEventById(
+            @PathVariable Long id) {
 
-        EventInfo event = eventService.getEventById(id);
+        Event event = eventService.getEventById(id);
 
         if (event == null) {
             return ResponseEntity.notFound().build();
@@ -75,16 +74,16 @@ public class RegistrationController {
         return ResponseEntity.ok(event);
     }
 
-    // POST: создание нового мероприятия
+    // Создание мероприятия
     @PostMapping("/events")
-    public ResponseEntity<EventInfo> addEvent(
-            @RequestBody EventInfo request) {
+    public ResponseEntity<Event> addEvent(
+            @RequestBody Event request) {
 
         if (!isValid(request)) {
             return ResponseEntity.badRequest().build();
         }
 
-        EventInfo event = eventService.addEvent(
+        Event event = eventService.addEvent(
                 request.getTitle(),
                 request.getLocation()
         );
@@ -92,15 +91,13 @@ public class RegistrationController {
         return ResponseEntity.status(201).body(event);
     }
 
-    // PUT: изменение мероприятия
+    // Обновление мероприятия
     @PutMapping("/events/{id}")
-    public ResponseEntity<EventInfo> updateEvent(
-            @PathVariable int id,
-            @RequestBody EventInfo request) {
+    public ResponseEntity<Event> updateEvent(
+            @PathVariable Long id,
+            @RequestBody Event request) {
 
-        EventInfo existing = eventService.getEventById(id);
-
-        if (existing == null) {
+        if (eventService.getEventById(id) == null) {
             return ResponseEntity.notFound().build();
         }
 
@@ -108,23 +105,25 @@ public class RegistrationController {
             return ResponseEntity.badRequest().build();
         }
 
-        EventInfo updated = eventService.updateEvent(
+        Event updated = eventService.updateEvent(
                 id,
                 request.getTitle(),
                 request.getLocation()
         );
 
+        if (updated == null) {
+            return ResponseEntity.notFound().build();
+        }
+
         return ResponseEntity.ok(updated);
     }
 
-    // DELETE: удаление мероприятия
+    // Удаление мероприятия
     @DeleteMapping("/events/{id}")
     public ResponseEntity<Void> deleteEvent(
-            @PathVariable int id) {
+            @PathVariable Long id) {
 
-        boolean deleted = eventService.deleteEvent(id);
-
-        if (!deleted) {
+        if (!eventService.deleteEvent(id)) {
             return ResponseEntity.notFound().build();
         }
 
@@ -132,7 +131,7 @@ public class RegistrationController {
     }
 
     // Проверка названия и места проведения
-    private boolean isValid(EventInfo event) {
+    private boolean isValid(Event event) {
         return event != null
                 && event.getTitle() != null
                 && !event.getTitle().isBlank()

@@ -1,87 +1,66 @@
-
 package kz.iitu.registration.service;
 
-import kz.iitu.registration.model.EventInfo;
+import kz.iitu.registration.model.Event;
+import kz.iitu.registration.repository.EventRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class EventService {
 
-    // Список мероприятий
-    private final List<EventInfo> events = new ArrayList<>();
+    private final EventRepository repository;
 
-    // ID для следующего мероприятия
-    private int nextId = 4;
-
-    // Начальные мероприятия
-    public EventService() {
-        events.add(new EventInfo(1, "Web Design Workshop", "Room 101"));
-        events.add(new EventInfo(2, "JavaScript Quiz", "Room 202"));
-        events.add(new EventInfo(3, "IT Career Talk", "Conference Hall"));
+    // Подключение репозитория через конструктор
+    public EventService(EventRepository repository) {
+        this.repository = repository;
     }
 
-    // Приветственное сообщение из Lab 6
+    // Приветственное сообщение
     public String getWelcomeMessage() {
         return "Welcome to the Event Registration API";
     }
 
     // Получение всех мероприятий
-    public List<EventInfo> getEvents() {
-        return events;
+    public List<Event> getEvents() {
+        return repository.findAll();
     }
 
     // Поиск мероприятия по ID
-    public EventInfo getEventById(int id) {
-        for (EventInfo event : events) {
-            if (event.getId() == id) {
-                return event;
-            }
-        }
-        return null;
+    public Event getEventById(Long id) {
+        return repository.findById(id).orElse(null);
     }
 
     // Поиск по названию без учёта регистра
-    public List<EventInfo> searchByTitle(String title) {
-        List<EventInfo> result = new ArrayList<>();
-
-        for (EventInfo event : events) {
-            if (event.getTitle().toLowerCase()
-                    .contains(title.toLowerCase())) {
-                result.add(event);
-            }
-        }
-        return result;
+    public List<Event> searchByTitle(String title) {
+        return repository.findByTitleContainingIgnoreCase(title);
     }
 
     // Добавление мероприятия
-    public EventInfo addEvent(String title, String location) {
-        EventInfo event = new EventInfo(nextId, title, location);
-        events.add(event);
-        nextId++;
-        return event;
+    public Event addEvent(String title, String location) {
+        Event event = new Event(title, location);
+        return repository.save(event);
     }
 
     // Изменение мероприятия
-    public EventInfo updateEvent(int id, String title, String location) {
-        EventInfo event = getEventById(id);
+    public Event updateEvent(Long id, String title, String location) {
+        Event event = getEventById(id);
 
         if (event != null) {
             event.setTitle(title);
             event.setLocation(location);
+            return repository.save(event);
         }
 
-        return event;
+        return null;
     }
 
     // Удаление мероприятия
-    public boolean deleteEvent(int id) {
-        EventInfo event = getEventById(id);
+    public boolean deleteEvent(Long id) {
+        Event event = getEventById(id);
 
         if (event != null) {
-            events.remove(event);
+            repository.delete(event);
             return true;
         }
 
